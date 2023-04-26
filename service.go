@@ -3,7 +3,11 @@ package novelsvc
 import (
 	"context"
 	"errors"
+	"fmt"
 	"sync"
+
+	"github.com/gocolly/colly/v2"
+	"github.com/gocolly/colly/v2/queue"
 )
 
 var (
@@ -24,7 +28,7 @@ type BookInfo struct {
 	Source      string `json:"source" bson:"source" comment:"搜索结果来源"`
 }
 type Service interface {
-	GetListByKeyword(ctx context.Context, keyword string) error
+	GetListByKeyword(ctx context.Context, keyword string) (list []*BookInfo, err error)
 }
 
 type inmemService struct {
@@ -38,12 +42,30 @@ func NewInmemService() Service {
 	}
 }
 
-func (s *inmemService) GetListByKeyword(ctx context.Context, keyword string) error {
+func (s *inmemService) GetListByKeyword(ctx context.Context, keyword string) (list []*BookInfo, err error) {
 	s.mtx.Lock()
 	defer s.mtx.Unlock()
-	// if _, ok := s.m[p.ID]; ok {
-	// 	return ErrAlreadyExists // POST = create, don't overwrite
-	// }
-	// s.m[p.ID] = p
-	return nil
+	if _, ok := s.m[keyword]; ok {
+		return nil, ErrAlreadyExists // POST = create, don't overwrite
+	}
+
+	bookSources := sourceService.GetAllSource()
+
+	for i := range bookSources {
+		source := &bookSources[i]
+		f := fetcher.NewFetcher()
+		q, _ := queue.New(
+			2, // Number of consumer threads
+			&queue.InMemoryQueueStorage{MaxSize: 10000}, // Use default queue storage
+		)
+
+		f.OnXML(source.SearchItemRule, func(e *colly.XMLElement) {
+			list = append(list, s.parseItemSearch(source, e))
+		})
+		q.AddURL(fmt.Sprintf(source.SearchURL, keyword))
+		q.Run(f)
+	}
+	// return
+
+	return list, ErrNotFound
 }
