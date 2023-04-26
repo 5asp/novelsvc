@@ -3,11 +3,7 @@ package novelsvc
 import (
 	"context"
 	"errors"
-	"fmt"
 	"sync"
-
-	"github.com/gocolly/colly/v2"
-	"github.com/gocolly/colly/v2/queue"
 )
 
 var (
@@ -49,22 +45,22 @@ func (s *inmemService) GetListByKeyword(ctx context.Context, keyword string) (li
 		return nil, ErrAlreadyExists // POST = create, don't overwrite
 	}
 
-	bookSources := sourceService.GetAllSource()
+	// bookSources := sourceService.GetAllSource()
 
-	for i := range bookSources {
-		source := &bookSources[i]
-		f := fetcher.NewFetcher()
-		q, _ := queue.New(
-			2, // Number of consumer threads
-			&queue.InMemoryQueueStorage{MaxSize: 10000}, // Use default queue storage
-		)
+	// for i := range bookSources {
+	// 	source := &bookSources[i]
+	// 	f := fetcher.NewFetcher()
+	// 	q, _ := queue.New(
+	// 		2, // Number of consumer threads
+	// 		&queue.InMemoryQueueStorage{MaxSize: 10000}, // Use default queue storage
+	// 	)
 
-		f.OnXML(source.SearchItemRule, func(e *colly.XMLElement) {
-			list = append(list, s.parseItemSearch(source, e))
-		})
-		q.AddURL(fmt.Sprintf(source.SearchURL, keyword))
-		q.Run(f)
-	}
+	// 	f.OnXML(source.SearchItemRule, func(e *colly.XMLElement) {
+	// 		list = append(list, s.parseItemSearch(source, e))
+	// 	})
+	// 	q.AddURL(fmt.Sprintf(source.SearchURL, keyword))
+	// 	q.Run(f)
+	// }
 	// return
 
 	return list, ErrNotFound
