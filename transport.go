@@ -31,6 +31,24 @@ func MakeHTTPHandler(s Service, logger log.Logger) http.Handler {
 		encodeResponse,
 		options...,
 	))
+	r.Methods("GET").Path("/info").Handler(httptransport.NewServer(
+		e.InfoEndpoint,
+		decodeInfoRequest,
+		encodeResponse,
+		options...,
+	))
+	r.Methods("GET").Path("/chapters").Handler(httptransport.NewServer(
+		e.ChaptersEndpoint,
+		decodeChaptersRequest,
+		encodeResponse,
+		options...,
+	))
+	r.Methods("GET").Path("/read").Handler(httptransport.NewServer(
+		e.ReadEndpoint,
+		decodeReadRequest,
+		encodeResponse,
+		options...,
+	))
 	return r
 }
 
@@ -62,6 +80,37 @@ func decodeSearchRequest(_ context.Context, r *http.Request) (request interface{
 	}
 
 	return searchRequest{Keyword: keyword}, nil
+}
+
+func decodeInfoRequest(_ context.Context, r *http.Request) (request interface{}, err error) {
+	detailURL := r.URL.Query().Get("detail_url")
+	source := r.URL.Query().Get("source")
+	if detailURL == "" &&  source == ""{
+		return nil, ErrBadRouting
+	}
+
+	return infoRequest{DetailURL: detailURL,Source: source}, nil
+}
+
+func decodeReadRequest(_ context.Context, r *http.Request) (request interface{}, err error) {
+	detailURL := r.URL.Query().Get("detail_url")
+	chapterURL := r.URL.Query().Get("chapter_url")
+	source := r.URL.Query().Get("source")
+	if detailURL == "" &&  source == "" && chapterURL == ""{
+		return nil, ErrBadRouting
+	}
+
+	return readRequest{DetailURL: detailURL,Source: source,ChapterURL: chapterURL}, nil
+}
+
+func decodeChaptersRequest(_ context.Context, r *http.Request) (request interface{}, err error) {
+	detailURL := r.URL.Query().Get("detail_url")
+	source := r.URL.Query().Get("source")
+	if detailURL == "" &&  source == ""{
+		return nil, ErrBadRouting
+	}
+
+	return infoRequest{DetailURL: detailURL,Source: source}, nil
 }
 
 type errorer interface {
