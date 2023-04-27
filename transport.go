@@ -22,13 +22,12 @@ var (
 func MakeHTTPHandler(s Service, logger log.Logger) http.Handler {
 	r := mux.NewRouter()
 	cors := cors.New(cors.Options{
-        AllowedOrigins: []string{"*"},
+        AllowedOrigins: []string{"https://moutfire.com"},
         AllowedMethods: []string{
-            http.MethodPost,
             http.MethodGet,
         },
         AllowedHeaders:   []string{"*"},
-        AllowCredentials: false,
+        AllowCredentials: true,
     })
 	
 	e := MakeServerEndpoints(s)
