@@ -10,6 +10,7 @@ import (
 	"github.com/go-kit/kit/transport"
 	httptransport "github.com/go-kit/kit/transport/http"
 	"github.com/gorilla/mux"
+	"github.com/rs/cors"
 )
 
 var (
@@ -20,6 +21,16 @@ var (
 
 func MakeHTTPHandler(s Service, logger log.Logger) http.Handler {
 	r := mux.NewRouter()
+	cors := cors.New(cors.Options{
+        AllowedOrigins: []string{"*"},
+        AllowedMethods: []string{
+            http.MethodPost,
+            http.MethodGet,
+        },
+        AllowedHeaders:   []string{"*"},
+        AllowCredentials: false,
+    })
+	
 	e := MakeServerEndpoints(s)
 	options := []httptransport.ServerOption{
 		httptransport.ServerErrorHandler(transport.NewLogErrorHandler(logger)),
@@ -49,7 +60,7 @@ func MakeHTTPHandler(s Service, logger log.Logger) http.Handler {
 		encodeResponse,
 		options...,
 	))
-	return r
+	return cors.Handler(r)
 }
 
 func encodeError(_ context.Context, err error, w http.ResponseWriter) {

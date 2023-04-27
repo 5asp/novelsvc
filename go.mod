@@ -7,6 +7,7 @@ require (
 	github.com/go-kit/kit v0.12.0
 	github.com/gocolly/colly v1.2.0
 	github.com/gorilla/mux v1.8.0
+	github.com/rs/cors v1.9.0
 	golang.org/x/net v0.9.0
 )
 
