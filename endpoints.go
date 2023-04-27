@@ -2,6 +2,7 @@ package novelsvc
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/go-kit/kit/endpoint"
 )
@@ -45,7 +46,10 @@ func MakeSearchEndpoint(s Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
 		req := request.(searchRequest)
 		list, e := s.GetListByKeyword(ctx, req.Keyword)
-		return searchResponse{Err: e, List: list}, nil
+		if e != nil {
+			fmt.Println("SearchErr:",e)
+		}
+		return list, nil
 	}
 }
 func MakeReadEndpoint(s Service) endpoint.Endpoint {
