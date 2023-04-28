@@ -18,20 +18,21 @@ type searchRequest struct {
 	Keyword string
 }
 type infoRequest struct {
-	Source string
+	Source    string
 	DetailURL string
 }
 type readRequest struct {
-	Source string
-	DetailURL string
+	Source     string
+	DetailURL  string
 	ChapterURL string
 }
-type searchResponse struct {
-	Err  error `json:"err,omitempty"`
-	List []*BookInfo
-}
 
-func (r searchResponse) error() error { return r.Err }
+// type searchResponse struct {
+// 	Err  error `json:"err,omitempty"`
+// 	List []*BookInfo
+// }
+
+// func (r searchResponse) error() error { return r.Err }
 
 func MakeServerEndpoints(s Service) Endpoints {
 	return Endpoints{
@@ -47,7 +48,7 @@ func MakeSearchEndpoint(s Service) endpoint.Endpoint {
 		req := request.(searchRequest)
 		list, e := s.GetListByKeyword(ctx, req.Keyword)
 		if e != nil {
-			fmt.Println("SearchErr:",e)
+			fmt.Println("SearchErr:", e)
 		}
 		return list, nil
 	}
@@ -55,15 +56,15 @@ func MakeSearchEndpoint(s Service) endpoint.Endpoint {
 func MakeReadEndpoint(s Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
 		req := request.(readRequest)
-		content := s.GetContent(ctx, req.DetailURL,req.ChapterURL,req.Source)
-		return content,nil
+		content := s.GetContent(ctx, req.DetailURL, req.ChapterURL, req.Source)
+		return content, nil
 	}
 }
 
 func MakeChaptersEndpoint(s Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
 		req := request.(infoRequest)
-		list := s.GetChapterList(ctx, req.DetailURL,req.Source)
+		list := s.GetChapterList(ctx, req.DetailURL, req.Source)
 		return list, nil
 	}
 }
@@ -71,7 +72,7 @@ func MakeChaptersEndpoint(s Service) endpoint.Endpoint {
 func MakeInfoEndpoint(s Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
 		req := request.(infoRequest)
-		item := s.GetInfo(ctx, req.DetailURL,req.Source)
-		return item,nil
+		item := s.GetInfo(ctx, req.DetailURL, req.Source)
+		return item, nil
 	}
 }
